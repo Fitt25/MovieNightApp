@@ -1,0 +1,40 @@
+@font-face {
+  font-family: 'Giza';
+  src: url('../../assets/fonts/Giza-Stencil.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+.logo {
+  font-family: 'Giza', sans-serif;
+  font-size: 48px;
+  /* rest of your styles */
+}
+
+/* Initially, show only the acronym */
+.acronym {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  position: relative;
+  left: 15px;
+}
+
+/* Initially, hide the full name */
+.full-name {
+  opacity: 0;
+  position: absolute;
+  left: 0;
+  top: 13px;
+  font-size: 48px;
+  color: #000000;
+  transition: opacity 0.3s ease, left 0.3s ease;
+}
+
+/* When hovered, hide the acronym and show the full name */
+.acronym.hidden {
+  opacity: 0;
+}
+
+.full-name.visible {
+  opacity: 1;
+  left: 45px; /* Adjust for spacing */
+}
