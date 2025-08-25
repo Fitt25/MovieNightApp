@@ -5,11 +5,11 @@ import Login from './components/Authorization/Login';
 import Register from './components/Authorization/Register';
 import Dashboard from './components/Dashboard';
 const App = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));;
 
     return (
         <>
-          <Header />
+          <Header isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />
           <div className="content">
             <Routes>
               {!isAuthenticated ? (

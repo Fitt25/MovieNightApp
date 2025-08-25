@@ -24,3 +24,30 @@
 .nav-link:hover {
     color: #0077cc; /* or whatever highlight color you want */
 }
+
+.logout-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-left: 1rem;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: normal;
+  outline: none;
+  transition: color 0.3s ease;
+}
+
+/* Remove focus outline, or customize it */
+.logout-button:focus {
+  outline: none;
+}
+
+/* Same hover effect as nav-link */
+.logout-button:hover {
+  color: #0077cc;
+  text-decoration: underline;
+}

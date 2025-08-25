@@ -1,58 +1,76 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './Auth.css';
 
-const Register = ({ setIsAuthenticated }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+const Register = () => {
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        if (!email || !password) {
-            setError('Please enter both email and password');
-            return;
-        }
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-        try {
-            const res = await axios.post('http://localhost:5000/register', { email, password });
-            if (res.data.token) {
-                localStorage.setItem('token', res.data.token);
-                setError('');
-                setIsAuthenticated(true);
-                alert('Registration succesful!');
-            }
-        } catch (err) {
-            setError('User already exists or invalid data.');
-        }
-    };
+  const handleSignup = async (e) => {
+    e.preventDefault();
 
-    return (
-        <div>
-            <h2>Sign Up</h2>
-            <form onSubmit={handleRegister}>
-                <div>
-                    <label>Email: </label>
-                    <input
-                        type = "email"
-                        value = {email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email"
-                    />
-                </div>
-                <div>
-                <label>Password: </label>
-                    <input
-                        type = "password"
-                        value = {password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                    />
-                </div>
-                <button type="submit">Sign Up</button>
-            </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-        </div>
-    );
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+
+    try {
+      const res = await axios.post('http://localhost:5000/register', {
+        email: form.email,
+        password: form.password,
+      });
+
+      if (res.status === 201 || res.data.message === 'User created') {
+        setSuccess('Account created! You can now log in.');
+        setError('');
+        setForm({ email: '', password: '', confirmPassword: '' });
+      }
+    } catch (err) {
+      setError('Sign Up failed. Try again.');
+      setSuccess('');
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <form className="auth-form" onSubmit={handleSignup}>
+        <h2>Sign Up</h2>
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+        />
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          value={form.confirmPassword}
+          onChange={handleChange}
+        />
+        {error && <p className="auth-error">{error}</p>}
+        {success && <p className="auth-success">{success}</p>}
+        <button type="submit">Sign Up</button>
+      </form>
+    </div>
+  );
 };
 
 export default Register;

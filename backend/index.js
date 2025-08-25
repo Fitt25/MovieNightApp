@@ -24,7 +24,8 @@ app.post('/login', usersController.userLogin);
 
 // Get all movies endpoint: handles GET requests to /movies, triggers getMovies method from moviesController
 app.get('/movies', moviesController.getMovies);
-
+// Get all movie posters through the API
+app.get('/api/poster', moviesController.getMoviePoster);
 // Add a new movie endpoint: handles POST requests to /movies, requires authentication via authenticateUser middleware, 
 // triggers addNewMovie method from moviesController
 app.post('/movies', authenticateUser, moviesController.addNewMovie);

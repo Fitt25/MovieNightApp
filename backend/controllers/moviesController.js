@@ -1,7 +1,10 @@
 // Importing Supabase client and other dependencies
+require('dotenv').config();
 const supabase = require('../db/supabaseClient'); // To interact with Supabase database
 const bcrypt = require('bcryptjs'); // Used for hashing passwords
 const jwt = require('jsonwebtoken'); // Used to generate JSON Web Tokens for authentication
+const fetch = require('node-fetch');
+
 
 // Get all movies: fetches and returns a list of all movies in the database
 exports.getMovies = async (req, res) => {
@@ -16,12 +19,37 @@ exports.getMovies = async (req, res) => {
 
         // Return the movies data as a response
         res.status(200).json(data);
-
+        
     } catch(err) {
         // Catch any error and return a response
         res.status(500).json({ error: err.message });
     }
 }
+// Fetch a poster from the OMDb API
+exports.getMoviePoster = async (req, res) => {
+  const { title } = req.query;
+    console.log("Fetching poster for title:", title);
+  if (!title) return res.status(400).json({ posterUrl: '/placeholder-poster.png' });
+
+  try {
+    const apiKey = process.env.OMDB_API_KEY;
+    console.log("Using API key:", apiKey);
+    const response = await fetch(`http://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${apiKey}`);
+    const data = await response.json();
+
+    console.log("OMDb response:", data);
+    console.log("Fetching");
+    if (data.Response === "True" && data.Poster && data.Poster !== "N/A") {
+        console.log("Poster found:", data.Poster);
+      return res.json({ posterUrl: data.Poster });
+    }
+    console.log("Poster not found, using placeholder");
+    return res.json({ posterUrl: '/placeholder-poster.png' });
+  } catch (error) {
+    console.error('Error fetching poster:', error);
+    return res.status(500).json({ posterUrl: '/placeholder-poster.png' });
+  }
+};
 
 // Add a new movie: adds a new movie to the database
 exports.addNewMovie = async (req, res) => {
@@ -42,8 +70,8 @@ exports.addNewMovie = async (req, res) => {
         if (error) throw error;
 
         // Return the newly added movie data as a response
-        res.status(201).json(data);
-
+        res.status(201).json(data[0]);
+        console.log('Inserting movie:', { title, genre, platform, synopsis, added_by: userId });
     } catch(err) {
         // Catch any error and send a response
         res.status(500).json({ error: err.message });
@@ -85,7 +113,7 @@ exports.updateMovie = async (req, res) => {
         if (error) throw error;
 
         // Return the updated movie data as a response
-        res.status(200).json(data);
+        res.status(200).json(data[0]);
 
     } catch(err) {
         // Catch any error and send a response
@@ -113,13 +141,14 @@ exports.deleteMovie = async (req, res) => {
         if(movie.added_by !== userId){
             return res.status(500).json({ error: "You are not authorized to delete this movie." });
         }
-
+        console.log('Deleting movie with id:', id);
         // Delete the movie from the database
         const { data, error } = await supabase
         .from('movies')
         .delete() // Delete the movie
         .eq('id', id); // Find the movie by its ID
-
+        console.log('Delete result:', { data, error });
+        console.log('Authenticated user ID:', req.user.id);
         // If there's an error during deletion, throw it
         if (error) throw error;
 

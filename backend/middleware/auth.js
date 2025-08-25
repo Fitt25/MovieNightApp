@@ -22,7 +22,7 @@ const authenticateUser = (req, res, next) => {
     try {
         // Verify the token with the secret from .env
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+        console.log('Decoded token:', decoded);
         // Attach the decoded user data to the request object for further use
         req.user = decoded;
 

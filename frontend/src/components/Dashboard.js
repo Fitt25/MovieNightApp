@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import MovieCard from './MovieCard/MovieCard.js'; 
+import { jwtDecode } from 'jwt-decode';
+import './Dashboard.css';
 
 const Dashboard = () => {
   const [movies, setMovies] = useState([]);
@@ -9,21 +12,51 @@ const Dashboard = () => {
     synopsis: '',
   });
   const token = localStorage.getItem('token'); // Check if user is logged in via token
+  let userId = null;
+  let decoded = null;
 
+  if (token) {
+    try {
+      const decoded = token ? jwtDecode(token) : null;
+      userId = decoded.id; // assuming your token payload has 'id'
+    } catch (error) {
+      console.error('Failed to decode token:', error);
+    }
+  }
+  const fetchPoster = async (title) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/poster?title=${encodeURIComponent(title)}`);
+      const data = await res.json();
+      return data.posterUrl;
+    } catch (err) {
+      console.error('Poster fetch error:', err);
+      return '/placeholder-poster.png';
+    }
+  };
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const res = await fetch('http://localhost:5000/movies');
+        const res = await fetch("http://localhost:5000/movies");
         const data = await res.json();
-        setMovies(data);
+
+        // fetch posters in parallel
+        const moviesWithPosters = await Promise.all(
+          data.map(async (movie) => {
+            console.log(await fetchPoster(movie.title));
+            const posterUrl = await fetchPoster(movie.title);
+            return { ...movie, posterUrl };
+          })
+        );
+        
+        setMovies(moviesWithPosters);
       } catch (err) {
-        console.error('Failed to fetch movies:', err);
+        console.error("Failed to fetch movies:", err);
       }
     };
 
     fetchMovies();
   }, []);
-
+  
   const handleAddMovie = async () => {
     if (!token) {
       alert('You must be logged in to add a movie');
@@ -44,8 +77,14 @@ const Dashboard = () => {
           synopsis: newMovie.synopsis,
         }),
       });
+
       const data = await res.json();
-      setMovies([...movies, data]);
+
+      // fetch poster for the new movie
+      const posterUrl = await fetchPoster(data.title);
+      const movieWithPoster = { ...data, posterUrl };
+
+      setMovies([...movies, movieWithPoster]);
       setNewMovie({ title: '', genre: '', platform: '', synopsis: '' });
     } catch (err) {
       console.error('Add movie error:', err);
@@ -59,12 +98,22 @@ const Dashboard = () => {
     }
 
     try {
-      await fetch(`http://localhost:5000/movies/${id}`, {
+      const res = await fetch(`http://localhost:5000/movies/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error('Delete failed:', data.error);
+        alert('Delete failed: ' + data.error);
+        return;
+      }
+
+      // Delete succeeded, update UI
       setMovies(movies.filter((movie) => movie.id !== id));
     } catch (err) {
       console.error('Delete movie error:', err);
@@ -84,6 +133,11 @@ const Dashboard = () => {
         },
         body: JSON.stringify({ title: updatedTitle }),
       });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to update movie');
+      }
       const updated = await res.json();
       setMovies(
         movies.map((movie) => (movie.id === id ? { ...movie, title: updated.title } : movie))
@@ -92,13 +146,41 @@ const Dashboard = () => {
       console.error('Update movie error:', err);
     }
   };
+  
+  const handleThumbsUp = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/movies/${id}/thumbs-up`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      setMovies(
+        movies.map((movie) => (movie.id === id ? { ...movie, thumbs_up: data.movie.thumbs_up } : movie))
+      );
+    } catch (err) {
+      console.error('Thumbs up error:', err);
+    }
+  };
 
+  const handleThumbsDown = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/movies/${id}/thumbs-down`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      setMovies(
+        movies.map((movie) => (movie.id === id ? { ...movie, thumbs_down: data.movie.thumbs_down } : movie))
+      );
+    } catch (err) {
+      console.error('Thumbs down error:', err);
+    }
+  };
+  
   return (
     <div>
       <h2>Movie Dashboard 🎬</h2>
-
+      
       {/* Add Movie Form (Only visible if logged in) */}
-      {token && (
+      {userId && (
         <div className="add-form">
           <h3>Add New Movie</h3>
           <input
@@ -134,27 +216,19 @@ const Dashboard = () => {
         <h3>All Movies</h3>
         {movies.length === 0 ? (
           <p>No movies available.</p>
-        ) : (
-          movies.map((movie) => (
-            <div key={movie.id} className="movie-card">
-              <h4>{movie.title}</h4>
-              <p><strong>Genre:</strong> {movie.genre || 'N/A'}</p>
-              <p><strong>Platform:</strong> {movie.platform || 'N/A'}</p>
-              <p><strong>Synopsis:</strong> {movie.synopsis || 'N/A'}</p>
-              <p><strong>Created At:</strong> {new Date(movie.created_at).toLocaleString()}</p>
-              <p><strong>Thumbs Up:</strong> {movie.thumbs_up}</p>
-              <p><strong>Thumbs Down:</strong> {movie.thumbs_down}</p>
-
-              {/* Show Edit/Delete options only if logged in */}
-              {token && (
-                <div className="movie-actions">
-                  <button onClick={() => handleUpdateMovie(movie.id)}>Update</button>
-                  <button onClick={() => handleDeleteMovie(movie.id)}>Delete</button>
-                </div>
-              )}
-            </div>
-          ))
-        )}
+        ) : (movies.map((movie) => (
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onThumbsUp={handleThumbsUp}
+                onThumbsDown={handleThumbsDown}
+                onEdit={handleUpdateMovie}
+                onDelete={handleDeleteMovie}
+                isOwner={decoded && decoded.id === movie.added_by}
+              />
+            ))
+          )
+        }
       </div>
     </div>
   );

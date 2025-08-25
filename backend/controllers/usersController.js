@@ -83,6 +83,7 @@ exports.userRegistration = async (req, res) => {
         res.status(201).json({ token });
 
     } catch(err) {
+        console.error('Registration error:', err);
         // If there's any error, return it with a 500 status
         res.status(500).json({ error: err.message });
     }
