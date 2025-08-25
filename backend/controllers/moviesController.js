@@ -29,7 +29,7 @@ exports.getMovies = async (req, res) => {
 exports.getMoviePoster = async (req, res) => {
   const { title } = req.query;
     console.log("Fetching poster for title:", title);
-  if (!title) return res.status(400).json({ posterUrl: '/placeholder-poster.png' });
+  if (!title) return res.status(400).json({ error: "Invalid Title" });
 
   try {
     const apiKey = process.env.OMDB_API_KEY;
@@ -40,14 +40,14 @@ exports.getMoviePoster = async (req, res) => {
     console.log("OMDb response:", data);
     console.log("Fetching");
     if (data.Response === "True" && data.Poster && data.Poster !== "N/A") {
-        console.log("Poster found:", data.Poster);
-      return res.json({ posterUrl: data.Poster });
+        console.log("Movie Found:", data.Title);
+      return res.json({ title: data.Title, posterUrl: data.Poster, synopsis: data.Plot });
     }
-    console.log("Poster not found, using placeholder");
-    return res.json({ posterUrl: '/placeholder-poster.png' });
+    console.log("Movie not found in OMDb");
+    return res.status(404).json({ error: "Movie not found" });
   } catch (error) {
-    console.error('Error fetching poster:', error);
-    return res.status(500).json({ posterUrl: '/placeholder-poster.png' });
+    console.error('Error fetching Movie:', error);
+    return res.status(500).json({ error: "Failed to fetch movie details" });
   }
 };
 

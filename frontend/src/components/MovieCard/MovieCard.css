@@ -8,6 +8,7 @@
   transition: transform 0.3s ease;
   max-width: 280px;
   width: 100%;
+  margin: 12px;
 }
 
 .movie-card:hover {

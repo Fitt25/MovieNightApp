@@ -4,9 +4,11 @@ import './MovieCard.css';
 const MovieCard = ({ movie, onThumbsUp, onThumbsDown, onEdit, onDelete, isOwner }) => {
   const [hovered, setHovered] = useState(false);
 
-  const shortSynopsis = movie.synopsis.length > 100
-    ? movie.synopsis.substring(0, 100) + '...'
-    : movie.synopsis;
+  if(!movie) return null
+  const synopsis = movie.synopsis || "";
+  const shortSynopsis = synopsis.length > 100
+    ? synopsis.substring(0, 100) + '...'
+    : synopsis;
 
   return (
     <div
@@ -28,7 +30,7 @@ const MovieCard = ({ movie, onThumbsUp, onThumbsDown, onEdit, onDelete, isOwner 
           <button onClick={() => onThumbsDown(movie.id)}>👎 {movie.thumbs_down}</button>
         </div>
 
-        {hovered && (
+        {/*hovered && (*/
           <>
             <p><strong>Created At:</strong> {new Date(movie.created_at).toLocaleString()}</p>
             {isOwner && (
@@ -38,7 +40,7 @@ const MovieCard = ({ movie, onThumbsUp, onThumbsDown, onEdit, onDelete, isOwner 
               </div>
             )}
           </>
-        )}
+        /*)*/}
       </div>
     </div>
   );

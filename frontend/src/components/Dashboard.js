@@ -17,20 +17,23 @@ const Dashboard = () => {
 
   if (token) {
     try {
-      const decoded = token ? jwtDecode(token) : null;
+      decoded = token ? jwtDecode(token) : null;
       userId = decoded.id; // assuming your token payload has 'id'
     } catch (error) {
       console.error('Failed to decode token:', error);
     }
   }
-  const fetchPoster = async (title) => {
+  const fetchMovieDetails = async (title) => {
     try {
       const res = await fetch(`http://localhost:5000/api/poster?title=${encodeURIComponent(title)}`);
       const data = await res.json();
-      return data.posterUrl;
+      return {
+        title: data.title, 
+        synopsis: data.synopsis, 
+        posterUrl: data.posterUrl
+      };
     } catch (err) {
-      console.error('Poster fetch error:', err);
-      return '/placeholder-poster.png';
+      console.error('Fetch Movie Error:', err);
     }
   };
   useEffect(() => {
@@ -40,15 +43,15 @@ const Dashboard = () => {
         const data = await res.json();
 
         // fetch posters in parallel
-        const moviesWithPosters = await Promise.all(
+        const moviesWithDetails = await Promise.all(
           data.map(async (movie) => {
-            console.log(await fetchPoster(movie.title));
-            const posterUrl = await fetchPoster(movie.title);
-            return { ...movie, posterUrl };
+            console.log(await fetchMovieDetails(movie.title));
+            const details = await fetchMovieDetails(movie.title);
+            return { ...movie, ...details };
           })
         );
         
-        setMovies(moviesWithPosters);
+        setMovies(moviesWithDetails.filter(Boolean));
       } catch (err) {
         console.error("Failed to fetch movies:", err);
       }
@@ -64,6 +67,13 @@ const Dashboard = () => {
     }
 
     try {
+
+      const details = await fetchMovieDetails(newMovie.title);
+      if (!details) {
+        alert('Movie not found in OMDb. Please check the title.');
+        return;
+      }
+
       const res = await fetch('http://localhost:5000/movies', {
         method: 'POST',
         headers: {
@@ -71,20 +81,19 @@ const Dashboard = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          title: newMovie.title,
+          title: details.title,
           genre: newMovie.genre,
           platform: newMovie.platform,
-          synopsis: newMovie.synopsis,
+          synopsis: details.synopsis,
         }),
       });
 
       const data = await res.json();
 
       // fetch poster for the new movie
-      const posterUrl = await fetchPoster(data.title);
-      const movieWithPoster = { ...data, posterUrl };
+      const moviesWithDetails = { ...data, posterUrl: details.posterUrl  };
 
-      setMovies([...movies, movieWithPoster]);
+      setMovies([...movies, moviesWithDetails]);
       setNewMovie({ title: '', genre: '', platform: '', synopsis: '' });
     } catch (err) {
       console.error('Add movie error:', err);
@@ -216,7 +225,9 @@ const Dashboard = () => {
         <h3>All Movies</h3>
         {movies.length === 0 ? (
           <p>No movies available.</p>
-        ) : (movies.map((movie) => (
+          ) : (movies.map((movie) => {
+              console.log('decoded.id:', decoded?.id, 'movie.added_by:', movie.added_by);
+              return(
               <MovieCard
                 key={movie.id}
                 movie={movie}
@@ -225,10 +236,10 @@ const Dashboard = () => {
                 onEdit={handleUpdateMovie}
                 onDelete={handleDeleteMovie}
                 isOwner={decoded && decoded.id === movie.added_by}
+                
               />
-            ))
-          )
-        }
+              );
+        }))}
       </div>
     </div>
   );

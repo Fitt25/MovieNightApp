@@ -40,6 +40,7 @@ app.delete('/movies/:id', authenticateUser, moviesController.deleteMovie);
 
 app.post('/movies/:id/thumbs-up', authenticateUser, moviesController.givesThumbsUp);
 app.post('/movies/:id/thumbs-down', authenticateUser, moviesController.givesThumbsDown);
+
 // Port setup
 const PORT = process.env.PORT || 5000; // Sets the port for the server, default to 5000 if not defined in .env
 
