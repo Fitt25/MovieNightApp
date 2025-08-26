@@ -1,4 +1,40 @@
-/* Dashboard.css */
+.movie-dashboard-title {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #222;
+  margin: 30px 0;
+  position: relative;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 0; 
+}
+
+.movie-dashboard-title::before {
+  content: '';
+  position: absolute;
+  top: -10px; 
+  left: 50%;
+  transform: translateX(-50%) rotate(-20deg);
+  width: 140%;
+  height: 40px;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.25), transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(8px);
+}
+
+.movie-dashboard-title::after {
+  content: '';
+  display: block;
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, #a2a2a2, #4338ca);
+  margin: 10px auto 0 auto;
+  border-radius: 2px;
+  position: relative; 
+  z-index: 2;
+}
 
 h2 {
   text-align: center;
@@ -52,13 +88,12 @@ h2 {
 }
 
 .movie-list h3 {
-  grid-column: 1 / -1; /* Make the title span full width */
+  grid-column: 1 / -1; 
   color: #ffffff;
   margin-bottom: 10px;
   text-align: center;
 }
 
-/* Optional: add a background for the page */
 body {
   font-family: 'Helvetica Neue', Arial, sans-serif;
 }

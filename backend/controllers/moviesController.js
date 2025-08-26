@@ -41,7 +41,7 @@ exports.getMoviePoster = async (req, res) => {
     console.log("Fetching");
     if (data.Response === "True" && data.Poster && data.Poster !== "N/A") {
         console.log("Movie Found:", data.Title);
-      return res.json({ title: data.Title, posterUrl: data.Poster, synopsis: data.Plot });
+      return res.json({ title: data.Title, posterUrl: data.Poster, genre: data.Genre, synopsis: data.Plot });
     }
     console.log("Movie not found in OMDb");
     return res.status(404).json({ error: "Movie not found" });

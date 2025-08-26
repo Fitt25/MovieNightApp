@@ -12,7 +12,7 @@
 }
 
 .movie-card:hover {
-  transform: scale(1.03);
+  transform: scale(1.15);
 }
 
 .movie-poster img {
@@ -41,26 +41,40 @@
 }
 
 .thumbs button {
-  background-color: #e0e0e0;
+  background-color: #fbfbfb;
   border: none;
   padding: 5px 10px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-}
-
-.movie-actions {
-  margin-top: 10px;
 }
 
 .movie-actions button {
-  background-color: #f3f3f3;
-  border: none;
-  padding: 5px 10px;
+  padding: 6px 12px;
   margin-right: 8px;
-  border-radius: 6px;
-  cursor: pointer;
+  border-radius: 8px;
   font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.movie-actions button:first-child { /* Edit */
+  background-color: #7b7d79;
+  color: white;
+}
+
+.movie-actions button:first-child:hover {
+  background-color: #b8b8b8;
+}
+
+.movie-actions button:last-child { /* Delete */
+  background-color: #e96258;
+  color: white;
+}
+
+.movie-actions button:last-child:hover {
+  background-color: #f39393;
 }
 
 /* Responsive */

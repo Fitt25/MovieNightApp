@@ -33,7 +33,7 @@ exports.userLogin = async (req, res) => {
         }
 
         // Generate a JWT token with the user's ID, this token will be used for authenticating future requests
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '8h' });
 
         // Send the token back to the user
         res.json({ token });

@@ -26,14 +26,17 @@ const Dashboard = () => {
   const fetchMovieDetails = async (title) => {
     try {
       const res = await fetch(`http://localhost:5000/api/poster?title=${encodeURIComponent(title)}`);
+      if (!res.ok) return null;
       const data = await res.json();
       return {
         title: data.title, 
-        synopsis: data.synopsis, 
-        posterUrl: data.posterUrl
+        synopsis: data.synopsis || "", 
+        genre: data.genre || "",
+        posterUrl: data.posterUrl || "/placeholder-poster.png"
       };
     } catch (err) {
       console.error('Fetch Movie Error:', err);
+      return null;
     }
   };
   useEffect(() => {
@@ -82,7 +85,7 @@ const Dashboard = () => {
         },
         body: JSON.stringify({
           title: details.title,
-          genre: newMovie.genre,
+          genre: details.genre,
           platform: newMovie.platform,
           synopsis: details.synopsis,
         }),
@@ -101,11 +104,12 @@ const Dashboard = () => {
   };
 
   const handleDeleteMovie = async (id) => {
+    const token = localStorage.getItem('token');
+    
     if (!token) {
-      alert('You must be logged in to delete a movie');
+      alert('You must be logged in to delete a movie.');
       return;
     }
-
     try {
       const res = await fetch(`http://localhost:5000/movies/${id}`, {
         method: 'DELETE',
@@ -186,7 +190,7 @@ const Dashboard = () => {
   
   return (
     <div>
-      <h2>Movie Dashboard 🎬</h2>
+      <h2 className="movie-dashboard-title">Movie Dashboard</h2>
       
       {/* Add Movie Form (Only visible if logged in) */}
       {userId && (
@@ -199,22 +203,10 @@ const Dashboard = () => {
             onChange={(e) => setNewMovie({ ...newMovie, title: e.target.value })}
           />
           <input
-            name="genre"
-            placeholder="Genre"
-            value={newMovie.genre}
-            onChange={(e) => setNewMovie({ ...newMovie, genre: e.target.value })}
-          />
-          <input
             name="platform"
             placeholder="Platform"
             value={newMovie.platform}
             onChange={(e) => setNewMovie({ ...newMovie, platform: e.target.value })}
-          />
-          <input
-            name="synopsis"
-            placeholder="Synopsis"
-            value={newMovie.synopsis}
-            onChange={(e) => setNewMovie({ ...newMovie, synopsis: e.target.value })}
           />
           <button onClick={handleAddMovie}>Add Movie</button>
         </div>
@@ -222,7 +214,6 @@ const Dashboard = () => {
 
       {/* Show All Movies */}
       <div className="movie-list">
-        <h3>All Movies</h3>
         {movies.length === 0 ? (
           <p>No movies available.</p>
           ) : (movies.map((movie) => {

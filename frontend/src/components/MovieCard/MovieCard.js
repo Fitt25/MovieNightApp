@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import './MovieCard.css';
 
 const MovieCard = ({ movie, onThumbsUp, onThumbsDown, onEdit, onDelete, isOwner }) => {
@@ -23,11 +24,16 @@ const MovieCard = ({ movie, onThumbsUp, onThumbsDown, onEdit, onDelete, isOwner 
 
       <div className="movie-info">
         <h4>{movie.title}</h4>
+        <p><strong>Genre:</strong> {movie.genre}</p>
         <p><strong>Platform:</strong> {movie.platform?.join(', ') || 'N/A'}</p>
-        <p><strong>Synopsis:</strong> {hovered ? movie.synopsis : shortSynopsis}</p>
+        <p><strong>Synopsis:</strong> {hovered ? synopsis : shortSynopsis}</p>
         <div className="thumbs">
-          <button onClick={() => onThumbsUp(movie.id)}>👍 {movie.thumbs_up}</button>
-          <button onClick={() => onThumbsDown(movie.id)}>👎 {movie.thumbs_down}</button>
+          <button onClick={() => onThumbsUp(movie.id)}>
+            <FaThumbsUp /> {movie.thumbs_up}
+          </button>
+          <button onClick={() => onThumbsDown(movie.id)}>
+            <FaThumbsDown /> {movie.thumbs_down}
+          </button>
         </div>
 
         {/*hovered && (*/
